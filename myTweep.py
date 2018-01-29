@@ -12,7 +12,7 @@ import wget
 
 # OAuth Keys/Secrets
 consumer_key = ""
-consumer_secret = "a"
+consumer_secret = ""
 access_token = ""
 access_token_secret = ""
 user_handle = "abbottn3"
