@@ -11,10 +11,10 @@ import sys
 import wget
 
 # OAuth Keys/Secrets
-consumer_key = "xauVSLqGqtLqc593XJwuMrl9r"
-consumer_secret = "as9WhJtrr5Y47iag4sBgUYyBJBmwxvMon3GLL8oJK6sMwpmVDF"
-access_token = "874676070636814338-OmsqKer9vLzEOkvOJkDcdob9emKZn89"
-access_token_secret = "eCMWhQg5JgeIoV7TJAvW0RdmNOYlUbMSNkqTZjmu7epEn"
+consumer_key = ""
+consumer_secret = "a"
+access_token = ""
+access_token_secret = ""
 user_handle = "abbottn3"
 
 # OAuth Attempt
@@ -53,6 +53,6 @@ for status in tweets:
 print '\n\n'
 print media_files
 
-#for media_file in media_files:
-#    wget.download(media_file)
+for media_file in media_files:
+    wget.download(media_file)
 
