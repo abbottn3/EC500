@@ -1,0 +1,6 @@
+1. Create a service account and set GOOGLE_APPLICATION CREDENTIALS variable https://cloud.google.com/docs/authentication/getting-started
+2. Install gcloud command line tool https://cloud.google.com/sdk/downloads#interactive
+3. Install google-cloud-storage (only works with v1.6.0?)
+4. Set GOOGLE_APPLICATION_CREDENTIALS variable (https://cloud.google.com/docs/authentication/getting-started)
+
+My First Project-75c79c884e32
