@@ -11,11 +11,23 @@ import sys
 import wget
 
 # OAuth Keys/Secrets
-consumer_key = ""
-consumer_secret = ""
-access_token = ""
-access_token_secret = ""
+OAuthFilePath = 'C:/Users/abbot/Desktop/Everything/College/Building_Software/API_Exercise/pyOAuth.txt'
+with open(OAuthFilePath) as fp:
+    consumer_key = fp.readline().rstrip('\n')
+    consumer_secret = fp.readline().rstrip('\n')
+    access_token = fp.readline().rstrip('\n')
+    access_token_secret = fp.readline().rstrip('\n')
+
+
 user_handle = "abbottn3"
+print consumer_key
+#print '\n'
+print consumer_secret
+#print '\n'
+print access_token
+#print '\n'
+print access_token_secret
+#print '\n'
 
 # OAuth Attempt
 try:    
@@ -34,10 +46,7 @@ except tweepy.TweepError:
     sys.exit()
 
 
-print (user.screen_name)
-print (user.followers_count)
-for friend in user.friends():
-   print (friend.screen_name)
+print ('Grabbing images from ' + user.screen_name)
    
 tweets = api.home_timeline(screen_name = user_handle, count = 100)
 #print json.dumps([status._json for status in tweets])
@@ -49,8 +58,10 @@ for status in tweets:
         media_files.add(media[0]['media_url'])
     if len(media_files) >= 5:
     	break
+if len(media_files) <= 5:
+    print ('Only ' + str(len(media_files)) + ' images in last 100 posts')
+#could add question to continue here
 
-print '\n\n'
 print media_files
 
 for media_file in media_files:
