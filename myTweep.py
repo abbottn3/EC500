@@ -48,7 +48,7 @@ except tweepy.TweepError:
 
 print ('Grabbing images from ' + user.screen_name)
    
-tweets = api.home_timeline(screen_name = user_handle, count = 100)
+tweets = api.user_timeline(screen_name = user_handle, count = 100)
 #print json.dumps([status._json for status in tweets])
 
 media_files = set()
