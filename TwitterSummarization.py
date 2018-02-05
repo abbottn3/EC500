@@ -147,14 +147,21 @@ def gVision_and_FFMPEG(mFiles):
 					
 
 		# If no web entities, use labels
-		if cnt == 0:
-			response = client.label_detection(image=image)
-			labels = response.label_annotations
-			if labels:
-				if pictype > 0:
-					picdescripts.write('{}, {}'.format(labels[0].description, labels[1].description))
+		response = client.label_detection(image=image)
+		labels = response.label_annotations
+		if labels:
+			if pictype > 0:
+				if cnt ==0:
+					picdescripts.write(labels[1].description)
 				else:
+					picdescripts.write(', {}'.format(labels[1].description))
+			else:
+				if cnt == 0:
 					picdescripts.write('Label Description: {}, {}'.format(labels[0].description, labels[1].description))
+				else:
+					picdescripts.write(', {}'.format(labels[0].description))
+		
+			
 
 	# Close the files and compile the slideshow
 	fnames.close()
