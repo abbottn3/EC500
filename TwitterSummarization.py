@@ -64,82 +64,75 @@ if len(media_files) == 0:
 	print("Error -- No images in last 100 posts")
 	sys.exit()
 
-'''
-# Download image (for testing)
-for mf1 in media_files:
-	break
-wget.download(mf1)
-'''
 
 # Instantiates a client for Google Vision
 client = vision.ImageAnnotatorClient()
 
-'''
-# To read local picture
-file_name = os.path.join(
-    os.path.dirname(__file__),
-    'Adam.JPG')
-
-with io.open(file_name, 'rb') as image_file:
-    content = image_file.read()
-
-image = types.Image(content=content)
-'''
-filecnt = 1
-files2delete = []
+# Creating files for writing
 fnames = open('filenames.txt', 'w')
 picdescripts = open('SSdescriptions.txt', 'w')
 picdescripts.write('Summary Slideshow Descriptions\n')
+filecnt = 1 
+files2delete = []
 
+# To run for each image url in media_files
 for mf1 in media_files:
-	kind = 0
+	# Temporarily download image and add to "to delete" list
+	pictype = 0
 	DLpic = wget.download(mf1);
 	files2delete.append(DLpic)
+
+	# FFMPEG turns image into mp4
 	ff = ffmpy.FFmpeg(
 		inputs={DLpic: '-loop 1'},
-		outputs={'file' + str(filecnt) + '.mp4': ['-y', '-c:a', 'libfdk_aac', '-ar', '44100', '-ac', '2', '-vf', "scale='if(gt(a,16/9),1280,-1)':'if(gt(a,16/9),-1,720)', pad=1280:720:(ow-iw)/2:(oh-ih)/2", '-c:v', 'libx264', '-b:v', '10M', '-pix_fmt', 'yuv420p', '-r', '30', '-shortest', '-avoid_negative_ts', 'make_zero', '-fflags', '+genpts', '-t', '2']}
+		outputs={'file' + str(filecnt) + '.mp4': ['-y', '-c:a', 'libfdk_aac', '-ar', '44100', '-ac', '2',
+		'-vf', "scale='if(gt(a,16/9),1280,-1)':'if(gt(a,16/9),-1,720)', pad=1280:720:(ow-iw)/2:(oh-ih)/2",
+		'-c:v', 'libx264', '-b:v', '10M', '-pix_fmt', 'yuv420p', '-r', '30', '-shortest',
+		'-avoid_negative_ts', 'make_zero', '-fflags', '+genpts', '-t', '2']}
 		)
 	ff.run()
 	fnames.write("file 'file" + str(filecnt) + ".mp4'\n")
 	files2delete.append('file' + str(filecnt) + '.mp4')
 	
 	
-	# To read pic from url
+	# Read picture from url
 	picdescripts.write("\nImage {}: ".format(filecnt))
 	image = types.Image()
 	image.source.image_uri = mf1;
 	filecnt += 1
 
-	# Checking for labels
+	# Checking if it's just a text file (with labels)
 	response = client.label_detection(image=image)
 	labels = response.label_annotations
 	if labels:
 		if str(labels[0].description) == 'text':
-			kind += 1
+			pictype += 1
 			picdescripts.write('Text document about: ')
 
 	# Checking for logos
 	response = client.logo_detection(image=image)
 	logos = response.logo_annotations
 	if logos:
-		if kind > 0:
+		if pictype > 0:
 			picdescripts.write(logos[0].description)
 		else:
-			picdescripts.write('Logo Description: {}'.format(logos[0].description))
-			kind += 1
+			picdescripts.write('Logo Description: {}, '.format(logos[0].description))
+			pictype += 1
 
-	# Checking for web entities
-	if kind > 0:
+	# Checking for web entities. Note: if it's a text file or has a logo, we can be less picky with the
+	# web description, and therefore set the minimum matching score 'escore' to 1. Else, set to 2.
+	# Additionally, if it's a text doc or has a logo, the formatting is different, hense the if/else statements.
+	if pictype > 0:
 		escore = 1
 	else:
-		escore = 2
+		escore = 3
 	response = client.web_detection(image=image)
 	webnotes = response.web_detection
 	webEnts = set()
 	cnt = 0
 	if webnotes.web_entities:
 		if webnotes.web_entities[0] > escore:
-			if kind > 0:
+			if pictype > 0:
 				picdescripts.write(webnotes.web_entities[0].description)
 			else:
 				picdescripts.write('Web Description: {}'.format(webnotes.web_entities[0].description))
@@ -156,11 +149,12 @@ for mf1 in media_files:
 		response = client.label_detection(image=image)
 		labels = response.label_annotations
 		if labels:
-			if kind > 0:
+			if pictype > 0:
 				picdescripts.write('{}, {}'.format(labels[0].description, labels[1].description))
 			else:
 				picdescripts.write('Label Description: {}, {}'.format(labels[0].description, labels[1].description))
 
+# Close the files and compile the slideshow
 fnames.close()
 picdescripts.close()
 ff2 = ffmpy.FFmpeg(
@@ -169,7 +163,7 @@ ff2 = ffmpy.FFmpeg(
 	)
 ff2.run()
 
-# Delete Leftover Files
+# Delete leftover files
 files2delete.append('filenames.txt')
 for delfile in files2delete:
 	os.remove(delfile)
