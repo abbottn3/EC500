@@ -6,6 +6,7 @@ Created on Sun Feb 4 2018
 """
 # Imports tweepy
 import tweepy
+import ffmpy
 import json
 import sys
 import wget
@@ -63,11 +64,12 @@ if len(media_files) == 0:
 	print("Error -- No images in last 100 posts")
 	sys.exit()
 
+'''
 # Download image (for testing)
 for mf1 in media_files:
 	break
 wget.download(mf1)
-
+'''
 
 # Instantiates a client for Google Vision
 client = vision.ImageAnnotatorClient()
@@ -83,33 +85,65 @@ with io.open(file_name, 'rb') as image_file:
 
 image = types.Image(content=content)
 '''
+filecnt = 1
+f = open('filenames.txt', 'w')
 
-# To read pic from url
-image = types.Image()
-image.source.image_uri = mf1;
+for mf1 in media_files:
+	kind = 0
+	DLpic = wget.download(mf1);
+	ff = ffmpy.FFmpeg(
+		inputs={DLpic: '-loop 1'},
+		outputs={'file' + str(filecnt) + '.mp4': ['-y', '-c:a', 'libfdk_aac', '-ar', '44100', '-ac', '2', '-vf', "scale='if(gt(a,16/9),1280,-1)':'if(gt(a,16/9),-1,720)', pad=1280:720:(ow-iw)/2:(oh-ih)/2", '-c:v', 'libx264', '-b:v', '10M', '-pix_fmt', 'yuv420p', '-r', '30', '-shortest', '-avoid_negative_ts', 'make_zero', '-fflags', '+genpts', '-t', '2']}
+		)
+	ff.run()
+	f.write("file 'file" + str(filecnt) + ".mp4'\n")
+	
+	
+	# To read pic from url
+	print("\nImage {}: ".format(filecnt))
+	image = types.Image()
+	image.source.image_uri = mf1;
+	filecnt += 1
 
-
-# Checking for logos
-response = client.logo_detection(image=image)
-logos = response.logo_annotations
-if logos:
-	print('Description: {}'.format(logos.description))
-
-# Checking for web entities
-response = client.web_detection(image=image)
-webnotes = response.web_detection
-webEnts = set()
-cnt = 0
-if webnotes.web_entities:
-	for entity in webnotes.web_entities:
-		if entity.score > 1:
-			print('Description: {}'.format(entity.description))
-			cnt += 1;
-
-# If no web entities, use labels
-if cnt == 0:
-	# Performs label detection on the image file
+	# Checking for labels
 	response = client.label_detection(image=image)
 	labels = response.label_annotations
-	for i in range(0,3):
-		print('Description: {}'.format(labels[i].description))
+	if str(labels[0].description) == 'text':
+		kind = 'text'
+		print('its a text document')
+
+	# Checking for logos
+	response = client.logo_detection(image=image)
+	logos = response.logo_annotations
+	if logos:
+		print('Logo Description: {}'.format(logos.description))
+		kind = 'logo'
+
+	# Checking for web entities
+	if kind == 'text':
+		escore = 1
+	else:
+		escore = 2
+	response = client.web_detection(image=image)
+	webnotes = response.web_detection
+	webEnts = set()
+	cnt = 0
+	if webnotes.web_entities:
+		for entity in webnotes.web_entities:
+			if entity.score > escore:
+				print('Web Description: {}'.format(entity.description))
+				cnt += 1
+
+	# If no web entities, use labels
+	if cnt == 0:
+		response = client.logo_detection(image=image)
+		labels = response.logo_annotations
+		if labels:
+			print('Logo Description: {}'.format(labels[0].description))
+			print('Logo Description: {}'.format(labels[1].description))
+f.close()
+ff2 = ffmpy.FFmpeg(
+	inputs={'filenames.txt': '-f concat'},
+	outputs={'SummarySlideshow.mp4': '-y'}
+	)
+ff2.run()
