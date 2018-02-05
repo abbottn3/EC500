@@ -86,21 +86,26 @@ with io.open(file_name, 'rb') as image_file:
 image = types.Image(content=content)
 '''
 filecnt = 1
-f = open('filenames.txt', 'w')
+pics2delete = []
+fnames = open('filenames.txt', 'w')
+picdescripts = open('SSdescriptions.txt', 'w')
+picdescripts.write('Summary Slideshow Descriptions\n')
 
 for mf1 in media_files:
 	kind = 0
 	DLpic = wget.download(mf1);
+	pics2delete.append(DLpic)
 	ff = ffmpy.FFmpeg(
 		inputs={DLpic: '-loop 1'},
 		outputs={'file' + str(filecnt) + '.mp4': ['-y', '-c:a', 'libfdk_aac', '-ar', '44100', '-ac', '2', '-vf', "scale='if(gt(a,16/9),1280,-1)':'if(gt(a,16/9),-1,720)', pad=1280:720:(ow-iw)/2:(oh-ih)/2", '-c:v', 'libx264', '-b:v', '10M', '-pix_fmt', 'yuv420p', '-r', '30', '-shortest', '-avoid_negative_ts', 'make_zero', '-fflags', '+genpts', '-t', '2']}
 		)
 	ff.run()
-	f.write("file 'file" + str(filecnt) + ".mp4'\n")
+	fnames.write("file 'file" + str(filecnt) + ".mp4'\n")
+	pics2delete.append('file' + str(filecnt) + '.mp4')
 	
 	
 	# To read pic from url
-	print("\nImage {}: ".format(filecnt))
+	picdescripts.write("\nImage {}: ".format(filecnt))
 	image = types.Image()
 	image.source.image_uri = mf1;
 	filecnt += 1
@@ -108,15 +113,16 @@ for mf1 in media_files:
 	# Checking for labels
 	response = client.label_detection(image=image)
 	labels = response.label_annotations
-	if str(labels[0].description) == 'text':
-		kind = 'text'
-		print('its a text document')
+	if labels:
+		if str(labels[0].description) == 'text':
+			kind = 'text'
+			picdescripts.write('its a text document')
 
 	# Checking for logos
 	response = client.logo_detection(image=image)
 	logos = response.logo_annotations
 	if logos:
-		print('Logo Description: {}'.format(logos.description))
+		picdescripts.write('Logo Description: {}'.format(logos[0].description))
 		kind = 'logo'
 
 	# Checking for web entities
@@ -129,21 +135,30 @@ for mf1 in media_files:
 	webEnts = set()
 	cnt = 0
 	if webnotes.web_entities:
+		if webnotes.web_entities[0] > escore:
+			picdescripts.write('Web Description: {}'.format(webnotes.web_entities[0].description))
+			cnt += 1
 		for entity in webnotes.web_entities:
 			if entity.score > escore:
-				print('Web Description: {}'.format(entity.description))
-				cnt += 1
+				if entity == webnotes.web_entities[0]:
+					continue
+				picdescripts.write(', {}'.format(entity.description))
+				
 
 	# If no web entities, use labels
 	if cnt == 0:
-		response = client.logo_detection(image=image)
-		labels = response.logo_annotations
+		response = client.label_detection(image=image)
+		labels = response.label_annotations
 		if labels:
-			print('Logo Description: {}'.format(labels[0].description))
-			print('Logo Description: {}'.format(labels[1].description))
-f.close()
+			picdescripts.write('Label Description: {}, {}'.format(labels[0].description, labels[1].description))
+
+fnames.close()
+picdescripts.close()
 ff2 = ffmpy.FFmpeg(
 	inputs={'filenames.txt': '-f concat'},
 	outputs={'SummarySlideshow.mp4': '-y'}
 	)
 ff2.run()
+
+for picture in pics2delete:
+	os.remove(picture)
