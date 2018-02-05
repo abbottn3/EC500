@@ -2,5 +2,4 @@
 2. Install gcloud command line tool https://cloud.google.com/sdk/downloads#interactive
 3. Install google-cloud-storage (only works with v1.6.0?)
 4. Set GOOGLE_APPLICATION_CREDENTIALS variable (https://cloud.google.com/docs/authentication/getting-started)
-
-My First Project-75c79c884e32
+	Windows example: >set GOOGLE_APPLICATION_CREDENTIALS=C:\Users\abbot\Desktop\Everything\College\Building_Software\API_Exercise\MFP-75c79c884e32.json
