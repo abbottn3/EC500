@@ -86,7 +86,7 @@ with io.open(file_name, 'rb') as image_file:
 image = types.Image(content=content)
 '''
 filecnt = 1
-pics2delete = []
+files2delete = []
 fnames = open('filenames.txt', 'w')
 picdescripts = open('SSdescriptions.txt', 'w')
 picdescripts.write('Summary Slideshow Descriptions\n')
@@ -94,14 +94,14 @@ picdescripts.write('Summary Slideshow Descriptions\n')
 for mf1 in media_files:
 	kind = 0
 	DLpic = wget.download(mf1);
-	pics2delete.append(DLpic)
+	files2delete.append(DLpic)
 	ff = ffmpy.FFmpeg(
 		inputs={DLpic: '-loop 1'},
 		outputs={'file' + str(filecnt) + '.mp4': ['-y', '-c:a', 'libfdk_aac', '-ar', '44100', '-ac', '2', '-vf', "scale='if(gt(a,16/9),1280,-1)':'if(gt(a,16/9),-1,720)', pad=1280:720:(ow-iw)/2:(oh-ih)/2", '-c:v', 'libx264', '-b:v', '10M', '-pix_fmt', 'yuv420p', '-r', '30', '-shortest', '-avoid_negative_ts', 'make_zero', '-fflags', '+genpts', '-t', '2']}
 		)
 	ff.run()
 	fnames.write("file 'file" + str(filecnt) + ".mp4'\n")
-	pics2delete.append('file' + str(filecnt) + '.mp4')
+	files2delete.append('file' + str(filecnt) + '.mp4')
 	
 	
 	# To read pic from url
@@ -160,5 +160,7 @@ ff2 = ffmpy.FFmpeg(
 	)
 ff2.run()
 
-for picture in pics2delete:
-	os.remove(picture)
+# Delete Leftover Files
+files2delete.append('filenames.txt')
+for delfile in files2delete:
+	os.remove(delfile)
