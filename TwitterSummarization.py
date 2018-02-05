@@ -115,18 +115,21 @@ for mf1 in media_files:
 	labels = response.label_annotations
 	if labels:
 		if str(labels[0].description) == 'text':
-			kind = 'text'
-			picdescripts.write('its a text document')
+			kind += 1
+			picdescripts.write('Text document about: ')
 
 	# Checking for logos
 	response = client.logo_detection(image=image)
 	logos = response.logo_annotations
 	if logos:
-		picdescripts.write('Logo Description: {}'.format(logos[0].description))
-		kind = 'logo'
+		if kind > 0:
+			picdescripts.write(logos[0].description)
+		else:
+			picdescripts.write('Logo Description: {}'.format(logos[0].description))
+			kind += 1
 
 	# Checking for web entities
-	if kind == 'text':
+	if kind > 0:
 		escore = 1
 	else:
 		escore = 2
@@ -136,7 +139,10 @@ for mf1 in media_files:
 	cnt = 0
 	if webnotes.web_entities:
 		if webnotes.web_entities[0] > escore:
-			picdescripts.write('Web Description: {}'.format(webnotes.web_entities[0].description))
+			if kind > 0:
+				picdescripts.write(webnotes.web_entities[0].description)
+			else:
+				picdescripts.write('Web Description: {}'.format(webnotes.web_entities[0].description))
 			cnt += 1
 		for entity in webnotes.web_entities:
 			if entity.score > escore:
@@ -150,7 +156,10 @@ for mf1 in media_files:
 		response = client.label_detection(image=image)
 		labels = response.label_annotations
 		if labels:
-			picdescripts.write('Label Description: {}, {}'.format(labels[0].description, labels[1].description))
+			if kind > 0:
+				picdescripts.write('{}, {}'.format(labels[0].description, labels[1].description))
+			else:
+				picdescripts.write('Label Description: {}, {}'.format(labels[0].description, labels[1].description))
 
 fnames.close()
 picdescripts.close()
