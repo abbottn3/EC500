@@ -18,6 +18,9 @@ import os
 from google.cloud import vision
 from google.cloud.vision import types
 
+# Global variable for list of files to delete
+files2delete = []
+
 # Receives twitter handle, returns list of image URLs
 def twitterDL(user_handle):
 	# OAuth Keys/Secrets
@@ -64,18 +67,19 @@ def twitterDL(user_handle):
 		sys.exit()
 	return media_files
 
-# Receives list of image URLs, returns 
+# Receives list of image URLs, returns dictionary of descriptions 
 def gVision_and_FFMPEG(mFiles):
 	# Instantiates a client for Google Vision
 	client = vision.ImageAnnotatorClient()
 
 	# Creating files for writing
-	files2delete = []
 	fnames = open('filenames.txt', 'w')
 	files2delete.append('filenames.txt')
 	picdescripts = open('SSdescriptions.txt', 'w')
 	picdescripts.write('Summary Slideshow Descriptions\n')
-	filecnt = 1 
+	#asdofiaf
+	filecnt = 0;
+	d_dict = {}
 
 	# To run for each image url in media_files
 	for mf1 in mFiles:
@@ -98,10 +102,13 @@ def gVision_and_FFMPEG(mFiles):
 		
 		
 		# Read picture from url
-		picdescripts.write("\nImage {}: ".format(filecnt))
+		picdescripts.write("\nImage {}: ".format(filecnt+1))
 		image = types.Image()
 		image.source.image_uri = mf1;
-		filecnt += 1
+
+		# Create empty list in dict
+		d_dict['Image_{}'.format(filecnt)] = []
+		
 
 		# Checking if it's just a text file (with labels)
 		response = client.label_detection(image=image)
@@ -116,8 +123,10 @@ def gVision_and_FFMPEG(mFiles):
 		logos = response.logo_annotations
 		if logos:
 			if pictype > 0:
+				d_dict['Image_{}'.format(filecnt)].append(logos[0].description)
 				picdescripts.write(logos[0].description)
 			else:
+				d_dict['Image_{}'.format(filecnt)].append(logos[0].description)
 				picdescripts.write('Logo Description: {}, '.format(logos[0].description))
 				pictype += 1
 
@@ -135,34 +144,41 @@ def gVision_and_FFMPEG(mFiles):
 		if webnotes.web_entities:
 			if webnotes.web_entities[0] > escore:
 				if pictype > 0:
+					d_dict['Image_{}'.format(filecnt)].append(webnotes.web_entities[0].description)
 					picdescripts.write(webnotes.web_entities[0].description)
 				else:
+					d_dict['Image_{}'.format(filecnt)].append(webnotes.web_entities[0].description)
 					picdescripts.write('Web Description: {}'.format(webnotes.web_entities[0].description))
 				cnt += 1
 			for entity in webnotes.web_entities:
 				if entity.score > escore:
 					if entity == webnotes.web_entities[0]:
 						continue
+					d_dict['Image_{}'.format(filecnt)].append(entity.description)
 					picdescripts.write(', {}'.format(entity.description))
 					
 
 		# If no web entities, use labels
 		response = client.label_detection(image=image)
 		labels = response.label_annotations
+		print(json.dumps(labels[1].description))
 		if labels:
 			if pictype > 0:
 				if cnt ==0:
+					d_dict['Image_{}'.format(filecnt)].append(labels[1].description)
 					picdescripts.write(labels[1].description)
 				else:
+					d_dict['Image_{}'.format(filecnt)].append(labels[1].description)
 					picdescripts.write(', {}'.format(labels[1].description))
 			else:
 				if cnt == 0:
+					d_dict['Image_{}'.format(filecnt)].append(labels[0].description)
+					d_dict[filecnt].append(labels[1].description)
 					picdescripts.write('Label Description: {}, {}'.format(labels[0].description, labels[1].description))
 				else:
+					d_dict['Image_{}'.format(filecnt)].append(labels[0].description)
 					picdescripts.write(', {}'.format(labels[0].description))
-		
-			
-
+		filecnt += 1
 	# Close the files and compile the slideshow
 	fnames.close()
 	picdescripts.close()
@@ -171,20 +187,22 @@ def gVision_and_FFMPEG(mFiles):
 		outputs={'SummarySlideshow.mp4': '-y'}
 		)
 	ff2.run()
-	return files2delete
+	return d_dict
 
 def main():
+
 	# Request Twitter Handle
 	t_handle = raw_input("Enter a Twitter handle: ")
 
 	# Grabs pic URLs
 	pic_urls = twitterDL(t_handle)
 
-	# Holds list of leftover files
-	leftover_files = gVision_and_FFMPEG(pic_urls)
+	# Returns dictionary of applicable descriptions
+	description_dict = gVision_and_FFMPEG(pic_urls)
+	print (description_dict)
 
 	# Delete leftover files
-	for delfile in leftover_files:
+	for delfile in files2delete:
 		os.remove(delfile)
 
 if __name__ == "__main__":
