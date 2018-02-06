@@ -14,6 +14,9 @@ Then FFMPEG converts the image into a short .mp4. This is repeated for all five 
 Lastly, FFMPEG concatenates all movie files into a 10 second slideshow, and finishes by deleting
 the extra files.
 
+Note: I recently added a dictionary that appends every time it would write to the txt file of descriptions.
+So the function now returns a dictionary and prints JSON data as well as creates the text document.
+
 Twitter API:
 To use the twitter API, you must create a Twitter API project to receive OAuth credentials. I stored them in a 
 text file line after line so that the program can read the inputs instead of hardcoding them in.
