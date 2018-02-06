@@ -1,5 +1,6 @@
-# EC500
-Building Software
+# EC500 - Building Software
+
+Twitter Summarization Slideshow Creator
 
 The TwitterSummarization.py file is a compilation of gVision.py and myTweep.py.
 The overall function is as follows: the program asks for an input of a twitter handle.
