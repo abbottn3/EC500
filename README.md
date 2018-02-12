@@ -31,3 +31,7 @@ Google API:
 FFMPEG:
 I downloaded ffmpeg and added the installation directory to PATH. Additionally, the program uses "ffmpy", which
 can be downloaded with a simple "pip install ffmpy". This allows ffmpeg commands to be called in the script.
+
+wget:
+wget is used to download the images from a url. This can be downloaded here https://pypi.python.org/pypi/wget and must be
+imported. 
