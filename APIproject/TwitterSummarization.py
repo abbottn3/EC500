@@ -199,7 +199,7 @@ def main():
 
 	# Returns dictionary of applicable descriptions
 	description_dict = gVision_and_FFMPEG(pic_urls)
-	print (description_dict)
+	print (json.dumps(description_dict))
 
 	# Delete leftover files
 	for delfile in files2delete:
