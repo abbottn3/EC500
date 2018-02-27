@@ -1,6 +1,6 @@
 # EC500_C1_HW2 Code Review Exercise by Qinjin JIA
 
-  Please check the **Issues** for the Comprehensive **Code Review**.
+  Please check the Peer's **Issues** for the Comprehensive **Code Review**.
   
   There is an **cross-platform problem** of peer's code, and I **CANNOT** solve the problem :boom::boom::boom:
 
