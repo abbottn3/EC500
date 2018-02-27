@@ -1,33 +1,17 @@
-# EC500 - Building Software
+# EC500_C1_HW2 Code Review Exercise by Qinjin JIA
 
-Twitter Summarization Slideshow Creator
+  Please check the **Issues** for the Comprehensive **Code Review**.
+  
+  There is an **cross-platform problem** of peer's code, and I **CANNOT** solve the problem :boom::boom::boom:
 
-The TwitterSummarization.py file is a compilation of gVision.py and myTweep.py.
-The overall function is as follows: the program asks for an input of a twitter handle.
-It then uses OAuth with the Twitter API, then grabs the last 100 tweets from that user's
-profile. It scans these tweets and pulls 5 pictures (if less than five, the program says
-so. If none, the program throws an error).
+  As Osama said that if people are having **too much trouble** making the programs **work cross platform**, you can just do the **test cases for your own program** and only do the **text peer review on peer's project**.
 
-Next, the pictures are downloaded and sent to another function that sends them to the google
-API. The image is analyzed, and information is pulled and stored into a local text file.
-Then FFMPEG converts the image into a short .mp4. This is repeated for all five images.
-Lastly, FFMPEG concatenates all movie files into a 10 second slideshow, and finishes by deleting
-the extra files.
+ :exclamation::exclamation::exclamation: Therefore, I would do the **test cases for my own program** and **only do the text peer review on  peer's API assignment** :exclamation::exclamation::exclamation
 
-Note: I recently added a dictionary that appends every time it would write to the txt file of descriptions.
-So the function now returns a dictionary and prints JSON data as well as creates the text document.
-
-Twitter API:
-To use the twitter API, you must create a Twitter API project to receive OAuth credentials. I stored them in a 
-text file line after line so that the program can read the inputs instead of hardcoding them in.
-
-Google API:
-1. Create a service account https://cloud.google.com/docs/authentication/getting-started
-2. Install google-cloud-storage (only works with v1.6.0?)
-3. Set GOOGLE_APPLICATION_CREDENTIALS variable (https://cloud.google.com/docs/authentication/getting-started)
-	Windows example: >set GOOGLE_APPLICATION_CREDENTIALS=C:\Users\abbot\Desktop\Everything\College\Building_Software\API_Exercise\MFP-75c79c884e32.json
-	Note: Be careful storing the credentials file and setting the credentials path.
-
-FFMPEG:
-I downloaded ffmpeg and added the installation directory to PATH. Additionally, the program uses "ffmpy", which
-can be downloaded with a simple "pip install ffmpy". This allows ffmpeg commands to be called in the script.
+  :link: link for **Unit Test** and **Local Home Page** https://github.com/qinjinjia/ec500c1spring18/tree/master/HW2%20Code%20Review
+  
+  The Author: :boy: **Qinjin Jia** qjia@bu.edu   :point_right:[@github/qinjinjia](https://github.com/qinjinjia)
+   
+  :mailbox_closed:Please feel free to contact me, if you have any suggestions or concerns.
+  
+</br>
