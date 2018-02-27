@@ -10,7 +10,7 @@
 
  </br>
  
- Therefore, I would do the **test cases for my own program** and **only do the text peer review on  peer's API assignment** :exclamation::exclamation::exclamation:
+ :exclamation:Therefore, I would do the **test cases for my own program** and **only do the text peer review on  peer's API assignment**
 
   :link: link for **Unit Test** and **Local Home Page** https://github.com/qinjinjia/ec500c1spring18/tree/master/HW2%20Code%20Review
   
