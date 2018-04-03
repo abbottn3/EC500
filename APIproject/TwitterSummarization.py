@@ -10,9 +10,13 @@ import ffmpy
 import json
 import sys
 import wget
+import datetime
 
 import io
 import os
+
+# For MongoDB
+from pymongo import MongoClient
 
 # Imports the Google Cloud client library
 from google.cloud import vision
@@ -68,7 +72,7 @@ def twitterDL(user_handle):
 	return media_files
 
 # Receives list of image URLs, returns dictionary of descriptions 
-def gVision_and_FFMPEG(mFiles):
+def gVision_and_FFMPEG(mFiles, t_handle):
 	# Instantiates a client for Google Vision
 	client = vision.ImageAnnotatorClient()
 
@@ -78,11 +82,15 @@ def gVision_and_FFMPEG(mFiles):
 	picdescripts = open('SSdescriptions.txt', 'w')
 	picdescripts.write('Summary Slideshow Descriptions\n')
 	#asdofiaf
-	filecnt = 0;
-	d_dict = {}
+	filecnt = 0
 
 	# To run for each image url in media_files
 	for mf1 in mFiles:
+		# Create dictionary for MongoDB
+		db_dict = {}
+		db_dict['name'] = 'Image_{}'.format(filecnt)
+		db_dict['date'] = datetime.datetime.utcnow()
+
 		# Temporarily download image and add to "to delete" list
 		pictype = 0
 		DLpic = wget.download(mf1);
@@ -104,10 +112,7 @@ def gVision_and_FFMPEG(mFiles):
 		# Read picture from url
 		picdescripts.write("\nImage {}: ".format(filecnt+1))
 		image = types.Image()
-		image.source.image_uri = mf1;
-
-		# Create empty list in dict
-		d_dict['Image_{}'.format(filecnt)] = []
+		image.source.image_uri = mf1
 		
 
 		# Checking if it's just a text file (with labels)
@@ -117,16 +122,19 @@ def gVision_and_FFMPEG(mFiles):
 			if str(labels[0].description) == 'text':
 				pictype += 1
 				picdescripts.write('Text document about: ')
+				db_dict['text'] = 'true'
+			else:
+				db_dict['text'] = 'false'
+
 
 		# Checking for logos
 		response = client.logo_detection(image=image)
 		logos = response.logo_annotations
 		if logos:
+			db_dict['logo'] = logos[0].description
 			if pictype > 0:
-				d_dict['Image_{}'.format(filecnt)].append(logos[0].description)
 				picdescripts.write(logos[0].description)
 			else:
-				d_dict['Image_{}'.format(filecnt)].append(logos[0].description)
 				picdescripts.write('Logo Description: {}, '.format(logos[0].description))
 				pictype += 1
 
@@ -143,42 +151,47 @@ def gVision_and_FFMPEG(mFiles):
 		cnt = 0
 		if webnotes.web_entities:
 			if webnotes.web_entities[0] > escore:
+				db_dict['entity'] = webnotes.web_entities[0].description
 				if pictype > 0:
-					d_dict['Image_{}'.format(filecnt)].append(webnotes.web_entities[0].description)
 					picdescripts.write(webnotes.web_entities[0].description)
 				else:
-					d_dict['Image_{}'.format(filecnt)].append(webnotes.web_entities[0].description)
 					picdescripts.write('Web Description: {}'.format(webnotes.web_entities[0].description))
 				cnt += 1
 			for entity in webnotes.web_entities:
 				if entity.score > escore:
 					if entity == webnotes.web_entities[0]:
 						continue
-					d_dict['Image_{}'.format(filecnt)].append(entity.description)
 					picdescripts.write(', {}'.format(entity.description))
 					
 
 		# If no web entities, use labels
 		response = client.label_detection(image=image)
 		labels = response.label_annotations
-		print(json.dumps(labels[1].description))
+
 		if labels:
 			if pictype > 0:
+				db_dict['label'] = labels[1].description
 				if cnt ==0:
-					d_dict['Image_{}'.format(filecnt)].append(labels[1].description)
 					picdescripts.write(labels[1].description)
 				else:
-					d_dict['Image_{}'.format(filecnt)].append(labels[1].description)
 					picdescripts.write(', {}'.format(labels[1].description))
 			else:
+				db_dict['label'] = labels[0].description
 				if cnt == 0:
-					d_dict['Image_{}'.format(filecnt)].append(labels[0].description)
-					d_dict[filecnt].append(labels[1].description)
 					picdescripts.write('Label Description: {}, {}'.format(labels[0].description, labels[1].description))
 				else:
-					d_dict['Image_{}'.format(filecnt)].append(labels[0].description)
 					picdescripts.write(', {}'.format(labels[0].description))
 		filecnt += 1
+		# Inserting into MongoDB
+		dbclient = MongoClient()
+		dbname = 'Twitter_Info'
+		db = dbclient[dbname]
+
+		user_info = db[t_handle]
+		#parsed = json.dumps(description_dict)
+		#for image in description_dict:
+		user_info.insert_one(db_dict)
+
 	# Close the files and compile the slideshow
 	fnames.close()
 	picdescripts.close()
@@ -187,7 +200,7 @@ def gVision_and_FFMPEG(mFiles):
 		outputs={'SummarySlideshow.mp4': '-y'}
 		)
 	ff2.run()
-	return d_dict
+	return db_dict
 
 def main():
 
@@ -198,8 +211,8 @@ def main():
 	pic_urls = twitterDL(t_handle)
 
 	# Returns dictionary of applicable descriptions
-	description_dict = gVision_and_FFMPEG(pic_urls)
-	print (json.dumps(description_dict))
+	description_dict = gVision_and_FFMPEG(pic_urls, t_handle)
+
 
 	# Delete leftover files
 	for delfile in files2delete:
