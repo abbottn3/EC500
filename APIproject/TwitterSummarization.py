@@ -15,6 +15,10 @@ import datetime
 import io
 import os
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 # For MongoDB
 from pymongo import MongoClient
 
@@ -68,7 +72,6 @@ def twitterDL(user_handle):
 	# note: could add question her to continue or not
 	if len(media_files) == 0:
 		print("Error -- No images in last 100 posts")
-		sys.exit()
 	return media_files
 
 # Receives list of image URLs, returns dictionary of descriptions 
@@ -202,6 +205,9 @@ def gVision_and_FFMPEG(mFiles, t_handle):
 	ff2.run()
 	return db_dict
 
+def get_files():
+	return files2delete
+
 def main():
 
 	# Request Twitter Handle
@@ -211,7 +217,8 @@ def main():
 	pic_urls = twitterDL(t_handle)
 
 	# Returns dictionary of applicable descriptions
-	description_dict = gVision_and_FFMPEG(pic_urls, t_handle)
+	if len(pic_urls) != 0:
+		description_dict = gVision_and_FFMPEG(pic_urls, t_handle)
 
 
 	# Delete leftover files
