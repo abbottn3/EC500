@@ -1,0 +1,10 @@
+So I have spent a ton of time getting to know MySQL because I thought I had to implement the entire past code with this databse method,
+but it turns out I could have just done phase 1. Oh well. Now I know how it works though. The main difference between the two is obviously
+about how the data is stored. In MySQL, data is stored relationally, and requires much more structure in order to enter the data in.
+I learned this the hard way, as if you try to just throw data in without a well planned schema, there are a lot of errors. MongoDB on the
+other hand allows you to create documents and add fields as you go, as the data in there isn't quite as organized.
+Another noticeable difference is ease of use. MySQL working in python is NOT robust. It is very confusing and the documentation is all over
+the place. Many programs needed to be downloaded, including a lot of erroneous errors that should not have been flagged in the first place.
+MongoDB on the other hand just had a few easy "pip installs" and it was ready to go. Overall, I'm sure MySQL is a helpful database program
+for large quantities of data that need to be properly organized for efficiency's sake, but in this case I think that MongoDB has been an
+overall easier and more effective tool.
