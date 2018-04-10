@@ -8,3 +8,7 @@ the place. Many programs needed to be downloaded, including a lot of erroneous e
 MongoDB on the other hand just had a few easy "pip installs" and it was ready to go. Overall, I'm sure MySQL is a helpful database program
 for large quantities of data that need to be properly organized for efficiency's sake, but in this case I think that MongoDB has been an
 overall easier and more effective tool.
+
+Update: I've now switched over to the airport info entry. This has proven to be a bit simpler and a better insight as to how to enter a 
+lot of data from a JSON file. The other thing this has taught me about the difference is that the entry takes considerably more time than
+with MongoDB.
