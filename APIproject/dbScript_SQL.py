@@ -1,12 +1,17 @@
 import mysql.connector
+import json
+from pprint import pprint
 from mysql.connector import errorcode
 from getpass import getpass
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 def connectSQL():
 	# password= getpass("Enter mySQL password: ")
-	db_name = 'twitter_info_sql'
+	db_name = 'airportInfo'
 	try:
-		cnx = mysql.connector.connect(user='noah', password= 'QuakerValley14',
+		cnx = mysql.connector.connect(user='noah', password= getpass("Enter mySQL password: "),
 	    	                          host='127.0.0.1',
 	        	                      database=db_name)
 
@@ -20,50 +25,37 @@ def connectSQL():
 	return cnx
 
 
-def createTables(handles):
-	db_name = 'twitter_info_sql'
+def getAirports(cnx, cursor):
+	with open('airports.json') as data_file:
+		apdata = json.load(data_file)
+
 	tables = {}
-
-	for handle in handles:
-
-		tables[handle] = (
-		    "CREATE TABLE IF NOT EXISTS `" + handle + "` ("
-		    "  `handle` TEXT CHARACTER SET utf8,"
-		    "  `entities` TEXT CHARACTER SET utf8,"
-		    "  `labels` TEXT CHARACTER SET utf8,"
-		    "  `texts` SMALLINT,"
-		    "  PRIMARY KEY (`handle`)"
-		    ") ENGINE=InnoDB")
-
-	for name, ddl in tables.iteritems():
-	    try:
-	        print("Creating table {}: ".format(name)),
-	        cursor.execute(ddl)
-	    except mysql.connector.Error as err:
-	        if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-	            print("already exists.")
-	        else:
-	            print(err.msg)
-	    else:
-	        print("OK")
-
-def insertEx(cursor, cnx):
-	db_name = 'twitter_info_sql'
-	tables = {}
-	date = "0408"
-	tables[date] = (
-	    "CREATE TABLE IF NOT EXISTS `" + date + "` ("
-	    "  `date` TEXT CHARACTER SET utf8,"
-	    "  `handle` varchar(40) NOT NULL,"
-	    "  `entities` TEXT CHARACTER SET utf8,"
-	    "  `labels` TEXT CHARACTER SET utf8,"
-	    "  `texts` SMALLINT,"
-	    "  PRIMARY KEY (`date`)"
+	for airport in apdata:
+		code = airport["code"]
+		tables[code] = (
+	    "CREATE TABLE IF NOT EXISTS `" + code + "` ("
+	    "  `city` TEXT CHARACTER SET utf8,"
+	    "  `code` VARCHAR(3),"
+	    "  `country` TEXT CHARACTER SET utf8,"
+	    "  `direct_flights` TEXT CHARACTER SET utf8,"
+	    "  `elev` TEXT CHARACTER SET utf8,"
+	    "  `email` TEXT CHARACTER SET utf8,"
+	    "  `icao` TEXT CHARACTER SET utf8,"
+	    "  `lat` TEXT CHARACTER SET utf8,"
+	    "  `lon` TEXT CHARACTER SET utf8,"
+	    "  `name` TEXT CHARACTER SET utf8,"
+	    "  `phone` TEXT CHARACTER SET utf8,"
+	    "  `runway_length` TEXT CHARACTER SET utf8,"
+	    "  `state` TEXT CHARACTER SET utf8,"
+	    "  `type` TEXT CHARACTER SET utf8,"
+	    "  `tz` TEXT CHARACTER SET utf8,"
+	    "  `url` TEXT CHARACTER SET utf8,"
+	    "  `woeid` TEXT CHARACTER SET utf8,"
+	    "  PRIMARY KEY (`code`)"
 	    ") ENGINE=InnoDB")
-
-	for name, ddl in tables.iteritems():
+	for code, ddl in tables.iteritems():
 	    try:
-	        print("Creating table {}: ".format(name)),
+	        print("Creating table {}: ".format(code)),
 	        cursor.execute(ddl)
 	    except mysql.connector.Error as err:
 	        if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
@@ -72,40 +64,24 @@ def insertEx(cursor, cnx):
 	            print(err.msg)
 	    else:
 	        print("OK")
+	enterAirportInfo(apdata, cursor, cnx)
 
-	name = "Some new city"
- 
-	country_code = 'SNC'
-	 
-	district = 'Someyork'
-	 
-	population = 10008
-	 
-	data = [
-	('city 1', 'MAC', 'distrct 1', 16822),
-	('city 2', 'PSE', 'distrct 2', 15642),
-	('city 3', 'ZWE', 'distrct 3', 11642),
-	('city 4', 'USA', 'distrct 4', 14612),
-	('city 5', 'RPD', 'distrct 5', 17672),
-	]
-	 
-	sql = "insert into city(date, handle, entities, texts) VALUES(%s, %s, %s, %s)"
-	 
-	number_of_rows = cursor.executemany(sql, data)
-	cnx.commit()
-	'''
-	sql = "insert into 4/8(date, handle, entities, labels, texts) VALUES(%s, %s, %s, %s, %s)"
-	execdata = [('4/8', 'justinbieber', 'entity thing', 'label thing', 'text thing')]
-	cursor.executemany(sql, execdata)
-	cnx.commit()
-	'''
+def enterAirportInfo(apdata, cursor, cnx):
+	for airport in apdata:
+		code = airport["code"]
+		sql = "insert into " + code + "(city, code, country, direct_flights, elev, email, icao, lat, lon, name, phone, runway_length, state, type, tz, url, woeid) \
+				VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" % \
+		(airport["city"], airport["code"], airport["country"], airport["direct_flights"], airport["elev"], airport["email"],
+		airport["icao"], airport["lat"], airport["lon"], airport["name"], airport["phone"], airport["runway_length"],
+		airport["state"], airport["type"], airport["tz"], airport["url"], airport["woeid"])
+		number_of_rows = cursor.execute(sql)
+		cnx.commit()
+
 
 def main():
-	handles = ['katyperry', 'justinbieber', 'BarackObama', 'YouTube', 'Cristiano', 'jtimberlake', 'NeilTyson', 'BillNye', 'ElonMusk', 'cnnbrk',
-	'BillGates', 'Oprah', 'BrunoMars', 'Drake', 'espn', 'MileyCyrus', 'KevinHart4real', 'instagram', 'taylorswift13', 'ladygaga']
 	cnx = connectSQL()
 	cursor = cnx.cursor()
-	insertEx(cursor, cnx)
+	getAirports(cnx, cursor)
 	cursor.close()
 	cnx.close()
    
