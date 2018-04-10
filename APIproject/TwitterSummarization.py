@@ -188,9 +188,6 @@ def gVision_and_FFMPEG(mFiles, t_handle):
 		# Inserting into MongoDB
 		ins_MongoDB(t_handle, db_dict)
 
-		#inserting into MySQL
-		ins_MySQL(t_handle, db_dict)
-
 	# Close the files and compile the slideshow
 	fnames.close()
 	picdescripts.close()
@@ -209,54 +206,6 @@ def ins_MongoDB(t_handle, db_dict):
 	#parsed = json.dumps(description_dict)
 	#for image in description_dict:
 	user_info.insert_one(db_dict)
-
-def ins_MySQL(t_handle, db_dict):
-	db_name = 'twitter_info_sql'
-	try:
-		cnx = mysql.connector.connect(user='noah', password= 'QuakerValley14',
-	    	                          host='127.0.0.1',
-	        	                      database=db_name)
-
-	except mysql.connector.Error as err:
-	  if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-	    print("Something is wrong with your username or password")
-	  elif err.errno == errorcode.ER_BAD_DB_ERROR:
-	    print("Database does not exist")
-	  else:
-	    print(err)
-	cursor = cnx.cursor()
-
-	db_name = 'twitter_info_sql'
-	tables = {}
-	date = db_dict.get('date')
-	tables[date] = (
-	    "CREATE TABLE IF NOT EXISTS `" + date + "` ("
-	    "  `date` TEXT CHARACTER SET utf8,"
-	    "  `handle` TEXT CHARACTER SET utf8,"
-	    "  `entities` TEXT CHARACTER SET utf8,"
-	    "  `labels` TEXT CHARACTER SET utf8,"
-	    "  `texts` SMALLINT,"
-	    "  PRIMARY KEY (`handle`)"
-	    ") ENGINE=InnoDB")
-
-	for name, ddl in tables.iteritems():
-	    try:
-	        print("Creating table {}: ".format(name)),
-	        cursor.execute(ddl)
-	    except mysql.connector.Error as err:
-	        if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-	            print("already exists.")
-	        else:
-	            print(err.msg)
-	    else:
-	        print("OK")
-
-	sql = "insert into " + date + "(date, handle, entities, labels, texts) VALUES(%s, %s, %s, %s, %s)" % \
-	(db_dict.get(date), db_dict.get(handle), db_dict.get(entity), db_dict.get(label), db_dict.get(text))
-	number_of_rows = cursor.execute(sql)
-	cnx.commit()
-	cursor.close()
-	cnx.close()
 
 
 
