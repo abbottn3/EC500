@@ -67,12 +67,11 @@ void loop() {
     relTime = millis();
     if (relTime - pressTime > 1000) {
       digitalWrite(redLed, HIGH);
-      Serial.println("herered");
+      Serial.println("start");
       enterID();
     }
     else {
       digitalWrite(greenLed, HIGH);
-      Serial.println("heregreen");
       checkID();
     }
   }
@@ -91,14 +90,15 @@ void enterID() {
     uids[totalIDs][z] = uid[z];
     }
   */
-  Serial.println("here");
   int whilecnt = 0;
   while (!nfc.tagPresent() && whilecnt < 100000) {
     whilecnt += 1;
   }
   NfcTag tag = nfc.read();
-  Serial.println("nowhere?");
+  Serial.println("mid");
+  Serial.print('&');
   Serial.print(tag.getUidString());
+  Serial.print('$');
   uids[totalIDs] = tag.getUidString();
   totalIDs += 1;
   int flashcount = 0;
@@ -166,6 +166,7 @@ void checkID() {
     }
   }
   else {
+    digitalWrite(greenLed, LOW);
     while (flashcount < 5) {
       digitalWrite(redLed, HIGH);
       delay(500);
